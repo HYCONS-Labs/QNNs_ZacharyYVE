@@ -1,0 +1,8 @@
+navego-synth-gnss
+time(sec), lat(rad), lon(rad), altitude(m), velocity-north(m/s), velocity-east(m/s), velocity-down(m/s)
+
+navego-synth-ref
+time(sec), roll(rad), pitch(rad), yaw(rad), velocity-north(m/s), velocity-east(m/s), velocity-down(m/s), lat(rad), lon(rad), altitude(m)
+
+navego-synth-imu
+time(sec), acceleration-x(m/s^2), acceleration-y(m/s^2), acceleration-y(m/s^2), angular-rate-x(rad/s), angular-rate-y(rad/s), angular-rate-z(rad/s)
