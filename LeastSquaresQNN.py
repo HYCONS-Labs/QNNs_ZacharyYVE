@@ -14,7 +14,12 @@ def vec(v):
     """
     Converts a colummn vector v into vector of all quadratic combinations 
     Adapted from Luis Rodrigues' MATLAB code
+
+    :param v: Column vector
+    :return out: Row vector of quadratic combinations
     """
+
+    # Reshape input v to expected shape
     if len(v.shape) == 1:
         v = np.expand_dims(v, axis=1)
     if v.shape[1] > v.shape[0]:
@@ -33,7 +38,12 @@ def vec(v):
 def QNN_LS_H(x, a=0.0937, b=0.5, c=0.4688):
     """
     Returns the QNN least-square regressor matrix H from data x (Rodrigues, 2024)
+
+    :param nparray x: Nxn array of inputs (N: Datapoints, n: features)
+    :param float a,b,c: Quadratic parameters
+    :return H: Regressor matrix
     """
+
     dp, n = x.shape
     n_vec = int(n*(n+1)/2)
     H1 = np.zeros(shape=(dp,n_vec))
@@ -50,15 +60,20 @@ def QNN_LS_H(x, a=0.0937, b=0.5, c=0.4688):
 
 def Z_LSQNN_Weights(weight_vector, a=None, b=None, c=None):
     """
-    Constructs the Z matrix from the LS-QNN weight vector (theta). 
-    Z matrix does not contain quadratic parameters if a,b, or c is set to None.
+    Constructs the Z matrix from the LS-QNN weight vector. 
+    Z matrix does not contain quadratic parameters if a, b, or c is set to None.
+
+    :param weight_vector: Weight vector from a LSQNN
+    :param float a,b,c: Quadratic parameters
+    :return Z: Z matrix of QNN qudaratic form
     """
+
     r, _ = weight_vector.shape
     n = int((np.sqrt(9 + 8*r) - 3)/2)
-    Z_1_entries = int(n*(n+1)/2)
+    Z_1_entries = int(n*(n+1)/2) # Number of unique elements of the Z_1 matrix
 
-    Z = np.zeros(shape=(n+1,n+1))
-    # Z_1 and Z_4
+    Z = np.zeros((n+1,n+1))
+    # Calculate Z_1 and Z_4
     diag = 0
     counter = 0
     for i in range(Z_1_entries):
@@ -66,14 +81,14 @@ def Z_LSQNN_Weights(weight_vector, a=None, b=None, c=None):
             Z[i,i] = weight_vector[i,0]
             Z[n,n] += weight_vector[i,0]
         else:
-            Z[counter,counter+diag] = weight_vector[i,0]/2
-            Z[counter+diag,counter] = weight_vector[i,0]/2
+            Z[counter,counter+diag] = weight_vector[i,0]
+            Z[counter+diag,counter] = weight_vector[i,0]
         counter += 1
         if counter == n - diag:
             counter = 0
             diag += 1
     
-    # Z_2
+    # Calculate Z_2
     counter = 0
     for i in range(Z_1_entries, r):
         Z[n,counter] = weight_vector[i,0]
@@ -90,6 +105,7 @@ def Z_LSQNN_Weights(weight_vector, a=None, b=None, c=None):
 
 
 class LSQNN:
+    """Least squares trained quadratic neural network"""
     def __init__(self):
         self.weights = None
         self.a = None
@@ -97,6 +113,15 @@ class LSQNN:
         self.c = None
     
     def Train(self, x, y, beta=0, a=0.0937, b=0.5, c=0.4688):
+        """
+        Train the QNN
+
+        :param nparray x: Nxn array of inputs (N: Datapoints, n: features)
+        :param nparray y: Nxp array of labels (N: Datapoints, p: outputs)
+        :param float beta: Regularization coefficient
+        :param float a,b,c: Quadratic parameters
+        """
+
         H_ls = QNN_LS_H(x, a, b, c)
         w_ls = np.linalg.inv(H_ls.T @ H_ls + beta*np.eye(H_ls.shape[1])) @ H_ls.T @ y
         self.weights = w_ls
@@ -105,11 +130,23 @@ class LSQNN:
         self.c = c
     
     def Eval(self, x):
+        """
+        Eval with the QNN
+
+        :param nparray x: Nxn array of inputs (N: Datapoints, n: features)
+        :return nparray y: Array of outputs
+        """
+
         H = QNN_LS_H(x, self.a, self.b, self.c)
         y = H @ self.weights
         return y
     
     def Z_matrix(self, quadratic_params=True):
+        """
+        Return the quaratic form of the QNN weights
+
+        :param bool quadratic_params: If true then the quadratic parameters a,b,c are pre integrated into Z)
+        """
         if quadratic_params:
             return Z_LSQNN_Weights(self.weights, a=self.a, b=self.b, c=self.c)
         return Z_LSQNN_Weights(self.weights)
