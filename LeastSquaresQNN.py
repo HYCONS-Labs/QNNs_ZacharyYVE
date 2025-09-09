@@ -112,7 +112,7 @@ class LSQNN:
         self.b = None
         self.c = None
     
-    def Train(self, x, y, beta=0, a=0.0937, b=0.5, c=0.4688):
+    def Train(self, x, y, beta=0, a=0.0937, b=0.5, c=0.4688, return_loss=False):
         """
         Train the QNN
 
@@ -120,6 +120,7 @@ class LSQNN:
         :param nparray y: Nxp array of labels (N: Datapoints, p: outputs)
         :param float beta: Regularization coefficient
         :param float a,b,c: Quadratic parameters
+        :param float a,b,c: Returns the value of the loss function
         """
 
         H_ls = QNN_LS_H(x, a, b, c)
@@ -128,6 +129,8 @@ class LSQNN:
         self.a = a
         self.b = b
         self.c = c
+        if return_loss:
+            return ((y - H_ls @ w_ls).T @ (y - H_ls @ w_ls) + beta*(w_ls.T @ w_ls))[0,0]
     
     def Eval(self, x):
         """

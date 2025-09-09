@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 
-def QNN(X_data, Y_data, norm=2, beta=0, a=0.0937, b=0.5, c=0.4688, verbose=True):
+def QNN(X_data, Y_data, norm=2, beta=0, a=0.0937, b=0.5, c=0.4688, verbose=True, return_loss=False):
     """
     Solves the convex optimization dual problem for a 2-layer MLP with quadratic activation function from:
     B. Bartan and M. Pilanci, “Neural spectrahedra and semidefinite lifts: 
@@ -81,6 +81,7 @@ def QNN(X_data, Y_data, norm=2, beta=0, a=0.0937, b=0.5, c=0.4688, verbose=True)
         const.append(Zmk >> 0)
     prob = cp.Problem(obj, const)
     result = prob.solve(solver=cp.MOSEK)
+    loss = prob.value
     # Print final values
     if verbose:
         print("---Optimization Results---")
@@ -105,6 +106,8 @@ def QNN(X_data, Y_data, norm=2, beta=0, a=0.0937, b=0.5, c=0.4688, verbose=True)
         Zp_np[:,:,k] = Zpk
         Zm_np[:,:,k] = Zmk
     
+    if return_loss:
+        return Z, Zp_np, Zm_np, loss
     return Z, Zp_np, Zm_np
 
 
